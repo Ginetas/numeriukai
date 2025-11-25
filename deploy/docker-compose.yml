@@ -1,0 +1,47 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: anpr
+      POSTGRES_PASSWORD: anpr
+      POSTGRES_DB: anpr
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "anpr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ../backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql://anpr:anpr@db:5432/anpr
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ../frontend
+    command: npm run dev
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  edge:
+    build: ../edge
+    command: python pipeline.py
+    environment:
+      EDGE_CONFIG: /app/config/cameras.example.yaml
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
