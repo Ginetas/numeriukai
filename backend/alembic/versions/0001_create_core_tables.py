@@ -21,7 +21,8 @@ def upgrade() -> None:
         'zone',
         sa.Column('id', sa.Integer(), primary_key=True),
         sa.Column('name', sa.String(), nullable=False),
-        sa.Column('polygon', sa.String(), nullable=False),
+        sa.Column('type', sa.String(), nullable=False, server_default='Entry'),
+        sa.Column('geometry', sa.String(), nullable=False),
     )
     op.create_table(
         'camera',
