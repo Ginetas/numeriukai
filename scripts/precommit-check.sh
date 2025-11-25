@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+MERGE_PATTERN='^(<{7}|={7}|>{7})( .*)?$'
+
 echo "[precommit] Checking for merge conflict markers..."
-if git grep -nE '^(<<<<<<<|=======|>>>>>>>)( .*)?$' -- ':!scripts/precommit-check.sh' ':!.git/*' ':!**/node_modules/*' >/dev/null 2>&1; then
+if git grep -nE "$MERGE_PATTERN" -- ':!scripts/precommit-check.sh' ':!.git/*' ':!**/node_modules/*' >/dev/null 2>&1; then
   echo "[precommit] Merge conflict markers found. Please resolve before committing." >&2
-  git grep -nE '^(<<<<<<<|=======|>>>>>>>)( .*)?$' -- ':!scripts/precommit-check.sh' ':!.git/*' ':!**/node_modules/*'
+  git grep -nE "$MERGE_PATTERN" -- ':!scripts/precommit-check.sh' ':!.git/*' ':!**/node_modules/*'
   exit 1
 fi
 
