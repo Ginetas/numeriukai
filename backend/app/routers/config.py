@@ -35,6 +35,35 @@ def list_zones(session: Session = Depends(get_session)):
     return session.exec(select(models.Zone)).all()
 
 
+@router.put("/zones/{zone_id}", response_model=models.Zone)
+def update_zone(
+    zone_id: int, payload: schemas.ZoneUpdate, session: Session = Depends(get_session)
+):
+    zone = session.get(models.Zone, zone_id)
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    update_data = payload.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(zone, key, value)
+
+    session.add(zone)
+    session.commit()
+    session.refresh(zone)
+    return zone
+
+
+@router.delete("/zones/{zone_id}")
+def delete_zone(zone_id: int, session: Session = Depends(get_session)):
+    zone = session.get(models.Zone, zone_id)
+    if not zone:
+        raise HTTPException(status_code=404, detail="Zone not found")
+
+    session.delete(zone)
+    session.commit()
+    return {"status": "deleted"}
+
+
 @router.post("/models", response_model=models.ModelConfig)
 def create_model(payload: schemas.ModelConfigCreate, session: Session = Depends(get_session)):
     return _create_entity(session, models.ModelConfig, payload)

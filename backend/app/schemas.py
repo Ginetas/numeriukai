@@ -14,7 +14,14 @@ class CameraCreate(BaseModel):
 
 class ZoneCreate(BaseModel):
     name: str
-    polygon: str
+    type: str
+    geometry: str
+
+
+class ZoneUpdate(BaseModel):
+    name: Optional[str] = None
+    type: Optional[str] = None
+    geometry: Optional[str] = None
 
 
 class ModelConfigCreate(BaseModel):

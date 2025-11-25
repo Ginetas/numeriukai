@@ -16,7 +16,8 @@ class Camera(SQLModel, table=True):
 class Zone(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    polygon: str
+    type: str = "Entry"
+    geometry: str
 
 
 class ModelConfig(SQLModel, table=True):

@@ -20,7 +20,7 @@ Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį
 - `backend/` – FastAPI aplikacija, SQLModel modeliai, routeriai, Alembic ir starto skriptas.
 - `frontend/` – Next.js App Router UI, Zustand store, API klientas.
 - `deploy/` – `docker-compose.yml` (identiskas šakniniam) ir Kubernetes stubas.
-- `docs/` – architektūros, API ir edge konfigūracijos dokumentacija.
+- `docs/` – architektūros, API ir edge konfigūracijos dokumentacija (žiūrėkite [Zone Designer gidą](docs/zone-designer.md)).
 
 ## Quick start
 1. **Prerequisites**: Docker, Docker Compose, Node 18+, Python 3.11.
