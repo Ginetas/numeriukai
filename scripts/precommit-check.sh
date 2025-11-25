@@ -2,7 +2,9 @@
 set -euo pipefail
 
 echo "[precommit] Checking for merge conflict markers..."
-if rg --hidden --glob '!*vendor*' --glob '!.git/*' --glob '!node_modules/*' -g '!scripts/precommit-check.sh' "<<<<<<<|=======|>>>>>>>" >/dev/null 2>&1; then
+conflict_pattern='<{7}|={7}|>{7}'
+
+if rg --hidden --glob '!*vendor*' --glob '!.git/*' --glob '!node_modules/*' -g '!scripts/precommit-check.sh' "$conflict_pattern" >/dev/null 2>&1; then
   echo "[precommit] Merge conflict markers found. Please resolve before committing." >&2
   exit 1
 fi
