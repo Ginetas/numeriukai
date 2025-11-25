@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.env
+.env.*
+.venv/
+venv/
+*.sqlite3
+*.db
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Alembic artifacts
+alembic/versions/__pycache__/
+
+# Node
+node_modules/
+.next/
+out/
+.turbo/
+.yarn/
+.npm/
+.pnpm-store/
+*.log
+
+# Env files
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+
+# Compose
+*.pid

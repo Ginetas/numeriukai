@@ -1,0 +1,50 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-anpr}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-anpr}
+      POSTGRES_DB: ${POSTGRES_DB:-anpr}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER:-anpr}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ../backend
+    command: ./start.sh
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-anpr}:${POSTGRES_PASSWORD:-anpr}@db:5432/${POSTGRES_DB:-anpr}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ../frontend
+    command: npm run dev
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_started
+
+  edge:
+    build: ../edge
+    command: python start.py
+    environment:
+      EDGE_CONFIG: /app/config/cameras.example.yaml
+      BACKEND_API_URL: http://backend:8000
+    depends_on:
+      backend:
+        condition: service_started
+
+volumes:
+  db_data:
