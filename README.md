@@ -33,6 +33,18 @@ Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį
    - Frontend pasiekiamas per `http://localhost:3000`.
    - Edge konteineris kas ~10 s siunčia testinius įvykius į backend `/events/ingest`.
 
+### 📦 Instalacija
+
+**Linux**
+```bash
+./scripts/install_anpr_linux.sh
+```
+
+**Raspberry Pi**
+```bash
+./scripts/install_anpr_rpi.sh
+```
+
 ## Backend
 - Stack: FastAPI, SQLModel, Alembic, Postgres.
 - Pagrindiniai maršrutai: `/healthz`, `/config/*` CRUD stubai, `/events/ingest`, `/events/stream` (stub).
