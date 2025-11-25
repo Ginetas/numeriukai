@@ -22,6 +22,12 @@ Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį
 - `deploy/` – `docker-compose.yml` (identiskas šakniniam) ir Kubernetes stubas.
 - `docs/` – architektūros, API ir edge konfigūracijos dokumentacija.
 
+## Dokumentacija
+- [Live video pipeline](docs/live-video.md)
+- [Object tracking](docs/object-tracking.md)
+- [OCR ensemble](docs/ocr-ensemble.md)
+- [Frontend architecture](docs/frontend-architecture.md)
+
 ## Quick start
 1. **Prerequisites**: Docker, Docker Compose, Node 18+, Python 3.11.
 2. **Aplinkos kintamieji**: nukopijuokite `.env.example` į `.env` ir pritaikykite.

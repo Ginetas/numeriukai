@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import config, events, exporters, health
+from .routers import config, events, exporters, health, streams
 
 app = FastAPI(title="ANPR Engine")
 
@@ -17,3 +17,4 @@ app.include_router(health.router)
 app.include_router(config.router)
 app.include_router(events.router)
 app.include_router(exporters.router)
+app.include_router(streams.router)
