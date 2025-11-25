@@ -59,6 +59,7 @@ clone_repo() {
 
 prepare_env() {
   cd "$REPO_DIR"
+  npm config set registry https://registry.npmjs.org/
   if [[ ! -f .env ]]; then
     log "Creating .env from example."
     cp .env.example .env
