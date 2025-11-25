@@ -82,7 +82,7 @@ pytest
 - [ ] Eksportavimo atsarginė eilė su persistentu
 
 ## Git darbų patarimai
-- Jei GitHub arba IDE rodo „conflict“ indikatorius, prieš commit atlikite `git status` ir išspręskite visus failų konfliktus (pašalinkite `<<<<<<<`, `=======`, `>>>>>>>` žymes), tada `git add` ir `git commit`.
+- Jei GitHub arba IDE rodo „conflict“ indikatorius, prieš commit atlikite `git status` ir išspręskite visus failų konfliktus – pašalinkite automatinio sujungimo žymes (pvz. tekstą su „HEAD“ ir skirtingomis šakomis), tada `git add` ir `git commit`.
 - Įsitikinkite, kad `.env` failai nėra stage’inami – jie yra `.gitignore` sąraše.
 - Prieš keliamas PR, verta paleisti `docker-compose config` kad patikrintumėte sintaksę ir `npm run lint` / `pytest`, jei turite laiko.
 
