@@ -85,6 +85,7 @@ pytest
 - Jei GitHub arba IDE rodo „conflict“ indikatorius, prieš commit atlikite `git status` ir išspręskite visus failų konfliktus – pašalinkite automatinio sujungimo žymes (pvz. tekstą su „HEAD“ ir skirtingomis šakomis), tada `git add` ir `git commit`.
 - Įsitikinkite, kad `.env` failai nėra stage’inami – jie yra `.gitignore` sąraše.
 - Prieš keliamas PR, verta paleisti `docker-compose config` kad patikrintumėte sintaksę ir `npm run lint` / `pytest`, jei turite laiko.
+- Greitam patikrinimui prieš commit galite naudoti `scripts/precommit-check.sh`, kuris ieško konfliktų žymių, CRLF eilučių pabaigų ir validuoja `docker-compose` sintaksę.
 
 ## Troubleshooting build/install klaidoms
 - Jei `npm` praneša apie „Unknown env config http-proxy“ ar `403 Forbidden` iš registry, išvalykite lokalius proxy nustatymus ir naudokite viešą registrą: `npm config set registry https://registry.npmjs.org/`.
