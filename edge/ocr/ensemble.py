@@ -1,63 +1,56 @@
-from dataclasses import dataclass
-from typing import Dict, List
+"""OCR ensemble orchestrator."""
+from __future__ import annotations
 
-from pipeline import Detection
+from collections import Counter
+from typing import Dict, Tuple
 
-
-@dataclass
-class OCRResult:
-    text: str
-    confidence: float
+from . import crnn_model, tesseract_model, transformer_model
 
 
-class CRNNRecognizer:
-    def __init__(self, config: dict) -> None:
-        self.config = config
-
-    def recognize(self, frame: bytes, detection: Detection) -> OCRResult:
-        return OCRResult(text="CRNN123", confidence=0.8)
-
-
-class TransformerRecognizer:
-    def __init__(self, config: dict) -> None:
-        self.config = config
-
-    def recognize(self, frame: bytes, detection: Detection) -> OCRResult:
-        return OCRResult(text="TRF123", confidence=0.85)
+def _majority(votes: Dict[str, float]) -> Tuple[str, float]:
+    if not votes:
+        return "", 0.0
+    text = Counter(votes).most_common(1)[0][0]
+    return text, votes[text]
 
 
-class TesseractRecognizer:
-    def __init__(self, config: dict) -> None:
-        self.config = config
+def _weighted(votes: Dict[str, float]) -> Tuple[str, float]:
+    if not votes:
+        return "", 0.0
+    text = max(votes, key=votes.get)
+    return text, votes[text]
 
-    def recognize(self, frame: bytes, detection: Detection) -> OCRResult:
-        return OCRResult(text="TESS123", confidence=0.75)
+
+def _beam_search(votes: Dict[str, float], beam_width: int = 2) -> Tuple[str, float]:
+    if not votes:
+        return "", 0.0
+    sorted_votes = sorted(votes.items(), key=lambda kv: kv[1], reverse=True)
+    pruned = sorted_votes[:beam_width]
+    text, conf = pruned[0]
+    return text, conf
 
 
-class OCREnsemble:
-    def __init__(self, config: Dict):
-        self.config = config
-        self.crnn = CRNNRecognizer(config.get("crnn", {}))
-        self.transformer = TransformerRecognizer(config.get("transformer", {}))
-        self.tesseract = TesseractRecognizer(config.get("tesseract", {}))
+METHODS = {
+    "majority": _majority,
+    "weighted": _weighted,
+    "beam-search": _beam_search,
+}
 
-    def recognize(self, frame: bytes, detection: Detection) -> str:
-        candidates: List[OCRResult] = [
-            self.crnn.recognize(frame, detection),
-            self.transformer.recognize(frame, detection),
-            self.tesseract.recognize(frame, detection),
-        ]
-        votes: Dict[str, float] = {}
-        for candidate in candidates:
-            votes[candidate.text] = votes.get(candidate.text, 0) + candidate.confidence
-        return max(votes, key=votes.get)
 
-    def build_event(self, track, plate_text: str) -> dict:
-        return {
-            "plate": plate_text,
-            "camera_id": 1,
-            "meta": {
-                "track_id": track.track_id,
-                "bbox": track.detection.bbox,
-            },
-        }
+def run_ensemble(crop, config: Dict) -> Tuple[str, float]:
+    predictions = {}
+    enabled_models = config.get("enabled_models", ["crnn", "transformer", "tesseract"])
+    weights = config.get("weights", {"crnn": 1.0, "transformer": 1.0, "tesseract": 1.0})
+    if "crnn" in enabled_models:
+        text, conf = crnn_model.predict(crop)
+        predictions[text] = predictions.get(text, 0) + conf * weights.get("crnn", 1.0)
+    if "transformer" in enabled_models:
+        text, conf = transformer_model.predict(crop)
+        predictions[text] = predictions.get(text, 0) + conf * weights.get("transformer", 1.0)
+    if "tesseract" in enabled_models:
+        text, conf = tesseract_model.predict(crop)
+        predictions[text] = predictions.get(text, 0) + conf * weights.get("tesseract", 1.0)
+    method = config.get("method", "majority")
+    beam_width = config.get("beam_width", 2)
+    reducer = METHODS.get(method, _majority)
+    return reducer(predictions) if method != "beam-search" else _beam_search(predictions, beam_width)

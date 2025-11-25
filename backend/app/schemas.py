@@ -14,7 +14,7 @@ class CameraCreate(BaseModel):
 
 class ZoneCreate(BaseModel):
     name: str
-    polygon: str
+    geometry: str
 
 
 class ModelConfigCreate(BaseModel):
@@ -40,3 +40,19 @@ class PlateEventIngest(BaseModel):
     camera_id: Optional[int]
     timestamp: Optional[datetime] = None
     meta: Optional[dict] = None
+
+
+class OCRModelCreate(BaseModel):
+    name: str
+    type: str
+    weight: float = 1.0
+    enabled: bool = True
+    priority: int = 0
+    params: dict = {}
+
+
+class OCREnsembleUpdate(BaseModel):
+    enabled_models: list[str]
+    weights: dict
+    method: str = "majority"
+    beam_width: int = 2
