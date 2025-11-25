@@ -2,10 +2,9 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-client = TestClient(app)
 
-
-def test_healthcheck():
+def test_health_endpoint():
+    client = TestClient(app)
     response = client.get("/healthz")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    assert response.json() == {"status": "ok"}

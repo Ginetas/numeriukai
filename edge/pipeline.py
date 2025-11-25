@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import logging
+import random
+import string
+import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Iterator
 
 from settings import EdgeConfig, load_config
@@ -27,9 +29,9 @@ class RTSPIngest:
 
     def frames(self) -> Iterator[bytes]:
         logger.info("Starting RTSP ingest for %s", self.rtsp_url)
-        # Placeholder: integrate GStreamer or OpenCV capture here
-        for _ in range(3):
+        while True:
             yield b"fake-frame"
+            time.sleep(1)
 
 
 class Detector:
@@ -37,7 +39,6 @@ class Detector:
         self.config = config
 
     def detect(self, frame: bytes) -> list[Detection]:
-        # Placeholder detection logic
         return [Detection(bbox=(0, 0, 100, 50), score=0.9, label="plate")]
 
 
@@ -50,20 +51,27 @@ class EdgePipeline:
         self.ocr = OCREnsemble(config.ocr)
         self.exporter = ExportDispatcher(config.exporters)
 
+    @staticmethod
+    def _fake_plate() -> str:
+        letters = ''.join(random.choices(string.ascii_uppercase, k=3))
+        digits = ''.join(random.choices(string.digits, k=3))
+        return f"{letters}{digits}"
+
     def run(self) -> None:
         logger.info("Edge pipeline starting")
         for frame in self.ingest.frames():
             detections = self.detector.detect(frame)
             tracked = self.tracker.update(detections)
             for track in tracked:
-                plate_text = self.ocr.recognize(frame, track)
+                plate_text = self.ocr.recognize(frame, track) or self._fake_plate()
                 event = self.ocr.build_event(track, plate_text)
+                logger.info("Generated event %s", event)
                 self.exporter.dispatch(event)
+            time.sleep(10)
 
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    config_path = EdgeConfig.__annotations__.get("config_path", None)
     config = load_config()
     pipeline = EdgePipeline(config)
     pipeline.run()

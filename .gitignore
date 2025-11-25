@@ -4,18 +4,24 @@ __pycache__/
 *.egg-info/
 .eggs/
 .env
+.env.*
 .venv/
 venv/
 *.sqlite3
 *.db
 .pytest_cache/
 .mypy_cache/
-.alembic/
+.coverage
+htmlcov/
+
+# Alembic artifacts
+alembic/versions/__pycache__/
 
 # Node
 node_modules/
 .next/
 out/
+.turbo/
 .yarn/
 .npm/
 .pnpm-store/
@@ -23,7 +29,7 @@ out/
 
 # Env files
 .env.local
-.env.*
+.env.production
 
 # OS
 .DS_Store
@@ -35,4 +41,3 @@ Thumbs.db
 
 # Compose
 *.pid
-

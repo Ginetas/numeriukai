@@ -1,7 +1,3 @@
-"""OCR ensemble with multiple stub recognizers."""
-from __future__ import annotations
-
-import random
 from dataclasses import dataclass
 from typing import Dict, List
 
@@ -58,7 +54,10 @@ class OCREnsemble:
 
     def build_event(self, track, plate_text: str) -> dict:
         return {
-            "track_id": track.track_id,
-            "bbox": track.detection.bbox,
             "plate": plate_text,
+            "camera_id": 1,
+            "meta": {
+                "track_id": track.track_id,
+                "bbox": track.detection.bbox,
+            },
         }

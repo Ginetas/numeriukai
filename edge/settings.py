@@ -4,14 +4,14 @@ Edge worker settings and configuration loading utilities.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict
 
 import yaml
 
-
-CONFIG_PATH = Path(__file__).parent / "config" / "cameras.example.yaml"
+DEFAULT_CONFIG_PATH = Path(__file__).parent / "config" / "cameras.example.yaml"
 RETRY_QUEUE_PATH = Path(__file__).parent / "exporters" / "retry_queue.json"
 
 
@@ -24,8 +24,12 @@ class EdgeConfig:
     sensors: Dict[str, Any] = field(default_factory=dict)
 
 
-def load_config(path: Path = CONFIG_PATH) -> EdgeConfig:
-    data = yaml.safe_load(path.read_text())
+def load_config(path: Path | None = None) -> EdgeConfig:
+    config_path = Path(os.getenv("EDGE_CONFIG", path or DEFAULT_CONFIG_PATH))
+    data = yaml.safe_load(config_path.read_text())
+    backend_url = os.getenv("BACKEND_API_URL")
+    if backend_url and data.get("exporters", {}).get("rest"):
+        data["exporters"]["rest"]["endpoint"] = f"{backend_url.rstrip('/')}/events/ingest"
     return EdgeConfig(**data)
 
 

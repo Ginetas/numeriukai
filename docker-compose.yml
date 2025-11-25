@@ -15,7 +15,7 @@ services:
       retries: 5
 
   backend:
-    build: ../backend
+    build: ./backend
     command: ./start.sh
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-anpr}:${POSTGRES_PASSWORD:-anpr}@db:5432/${POSTGRES_DB:-anpr}
@@ -26,7 +26,7 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ../frontend
+    build: ./frontend
     command: npm run dev
     environment:
       NEXT_PUBLIC_BACKEND_URL: http://backend:8000
@@ -37,7 +37,7 @@ services:
         condition: service_started
 
   edge:
-    build: ../edge
+    build: ./edge
     command: python start.py
     environment:
       EDGE_CONFIG: /app/config/cameras.example.yaml

@@ -1,6 +1,6 @@
 # Edge konfigūracija
 
-Konfigūracija laikoma YAML faile (`edge/config/cameras.example.yaml`).
+Konfigūracija laikoma YAML faile (`edge/config/cameras.example.yaml`) ir gali būti perrašoma aplinkos kintamaisiais (`EDGE_CONFIG`, `BACKEND_API_URL`).
 
 ```yaml
 rtsp_url: rtsp://camera.local/stream
@@ -41,4 +41,4 @@ sensors:
 - **RTSP**: GStreamer pipeline turi būti integruotas `RTSPIngest` klasėje.
 - **OCR**: CRNN/Transformer/Tesseract stubai gali būti pakeisti realiais adapteriais.
 - **TPMS**: `transport` gali būti `udp` arba `mqtt`, `tpms_listener.py` numato stubą.
-- **Exporters**: REST ir WebSocket endpointai backendui.
+- **Exporters**: REST ir WebSocket endpointai backendui; REST adresas perrašomas `BACKEND_API_URL` jei nurodytas.

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import json
+from datetime import datetime
 from fastapi import APIRouter, Depends, WebSocket
 from sqlmodel import Session
 
@@ -12,8 +16,8 @@ def ingest_event(payload: schemas.PlateEventIngest, session: Session = Depends(g
     event = models.PlateEvent(
         plate=payload.plate,
         camera_id=payload.camera_id,
-        timestamp=payload.timestamp or None,
-        meta=(payload.meta or {}).__str__(),
+        timestamp=payload.timestamp or datetime.utcnow(),
+        meta=json.dumps(payload.meta or {}),
     )
     session.add(event)
     session.commit()
