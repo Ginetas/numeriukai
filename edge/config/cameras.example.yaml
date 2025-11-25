@@ -1,0 +1,34 @@
+# Example edge configuration
+rtsp_url: rtsp://camera.local/stream
+
+detectors:
+  type: yolov5
+  confidence_threshold: 0.5
+  device: cpu
+
+ocr:
+  crnn:
+    enabled: true
+    checkpoint: /models/crnn.ckpt
+  transformer:
+    enabled: true
+    checkpoint: /models/transformer.pt
+  tesseract:
+    enabled: true
+    language: eng
+  aggregator:
+    strategy: majority
+
+exporters:
+  rest:
+    enabled: true
+    endpoint: http://backend:8000/events/ingest
+  websocket:
+    enabled: true
+    endpoint: ws://backend:8000/events/stream
+
+sensors:
+  tpms:
+    enabled: false
+    transport: udp
+    port: 5555
