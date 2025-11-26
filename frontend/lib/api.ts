@@ -20,6 +20,19 @@ export async function apiFetch(path: string, options?: RequestInit) {
   return handleResponse(res);
 }
 
+export type EventSearchParams = {
+  plate?: string;
+  camera_id?: string;
+  zone_id?: string;
+  from_ts?: string;
+  to_ts?: string;
+  limit?: string;
+  offset?: string;
+  sort?: string;
+  order?: 'asc' | 'desc';
+  min_confidence?: string;
+};
+
 export const api = {
   health: () => apiFetch('/healthz'),
   cameras: {
@@ -50,5 +63,9 @@ export const api = {
   events: {
     search: (params: URLSearchParams) => apiFetch(`/events/search?${params.toString()}`),
     ingest: (data: any) => apiFetch('/events/ingest', { method: 'POST', body: JSON.stringify(data) }),
+    stream: (params?: URLSearchParams) => {
+      const urlParams = params && params.toString().length ? `?${params.toString()}` : '';
+      return new EventSource(`${API_BASE}/events/stream${urlParams}`);
+    },
   },
 };
