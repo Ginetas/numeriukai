@@ -47,8 +47,8 @@ Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį
 
 ## Backend
 - Stack: FastAPI, SQLModel, Alembic, Postgres.
-- Pagrindiniai maršrutai: `/healthz`, `/config/*` CRUD stubai, `/events/ingest`, `/events/stream` (stub).
-- Migracijos: Alembic bazinė migracija `0001_create_core_tables` kuria reikalingas lenteles.
+- Pagrindiniai maršrutai: `/healthz`, `/config/*` CRUD (kameros, zonos, modeliai, jutikliai, exporteriai), `/events/ingest`, `/events/search`, `/events/stream` (stub).
+- Migracijos: Alembic bazinė migracija `0001_create_core_tables` ir `0002_expand_schema` kuri prideda ANPR konfigūraciją ir įvykius.
 - Starto skriptas `backend/start.sh` laukia DB, paleidžia migracijas ir startuoja `uvicorn`.
 
 ### Testing
