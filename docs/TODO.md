@@ -1,15 +1,28 @@
-# Projekto statusas ir TODO
+# Project TODO
 
-## Kas jau veikia
-- **Backend**: veikia `FastAPI` aplikacija su sveikatos tikrinimu, pilnu CRUD maršrutų rinkiniu kameroms, zonomis, modelių konfigūracijoms, jutikliams ir eksporteriams bei įvykių ingestas/paieška. 【F:backend/app/main.py†L1-L17】【F:backend/app/routers/config.py†L1-L130】【F:backend/app/routers/events.py†L1-L41】【F:backend/app/routers/events.py†L43-L55】
-- **Frontend**: Next.js dashboard puslapis rodo backend bazės adresą, leidžia filtruoti įvykius pagal numerį, kamerą, zoną ir laiko intervalą bei atvaizduoja lentelę su rezultatais. 【F:frontend/app/dashboard/page.tsx†L1-L111】【F:frontend/app/dashboard/page.tsx†L113-L177】
-- **Edge**: egzistuoja pipeline karkasas su RTSP ingest stub'u, detektoriaus ir OCR ensemble vietomis bei eksportų dispatcher'iu, kuris generuoja testinius įvykius. 【F:edge/pipeline.py†L1-L67】【F:edge/pipeline.py†L69-L82】
+High-level tasks to ship the end-to-end ANPR system across edge, backend, and frontend components.
 
-## TODO
-- **Realus RTSP ingest ir dekodavimas**: pakeisti `RTSPIngest` stub'ą tikra GStreamer/OpenCV implementacija ir pridėti parametrizuojamus įvesties šaltinius. 【F:edge/pipeline.py†L21-L35】
-- **Detektorius ir OCR modeliai**: integruoti tikrus modelius (pvz., YOLO ir CRNN/transformer), užkrauti svorius iš konfigūracijos ir naudoti tikrus bounding box'ai/tekstą vietoje `_fake_plate`. 【F:edge/pipeline.py†L37-L68】【F:edge/pipeline.py†L74-L82】
-- **Tracker'io ir export pipeline patikimumas**: išplėsti `CentroidTracker` ir `ExportDispatcher` kad turėtų persistenciją, retry eilę ir matomą eksporterių būseną vietoje tuščio `/exporters` atsakymo. 【F:edge/pipeline.py†L53-L67】【F:backend/app/routers/exporters.py†L1-L8】
-- **Event stream ir notifikacijos**: įgyvendinti WebSocket srautą `/events/stream` (dabar tik placeholder) ir įtraukti live atnaujinimus į frontendą. 【F:backend/app/routers/events.py†L43-L55】【F:frontend/app/dashboard/page.tsx†L19-L111】
-- **Autentikacija ir autorizacija**: pridėti vartotojų modelį, tokenų išdavimą ir rolėmis paremtą prieigą prie config/event API bei frontend UI.
-- **Testavimas ir kokybės užtikrinimas**: pridėti vienetinius/integrocinius testus edge pipeline'ui ir frontend komponentams, suplanuoti load testus event ingestui ir paieškai.
-- **Diegimas**: papildyti `docker-compose`/Kubernetes manifestus realiomis priklausomybėmis (modelių svoriai, akceleratoriai), atskirais environment konfiguraciniais failais ir observability (logs/metrics) integracija.
+## Edge (Raspberry Pi + Hailo)
+- Define a GStreamer pipeline that uses the Pi hardware decoder for RTSP (H.264) ingestion and outputs frames resized/formatted for Hailo inference.
+- Integrate the YOLO plate detector and OCR (CNN+CTC) models with Hailo, ensuring model artifacts are versioned and loaded from configuration.
+- Implement a crop/filter stage that extracts plate regions in hardware before OCR.
+- Build a lightweight Python edge worker to read inference outputs, assemble `PlateEvent` payloads (camera ID, plate text, scores, timestamps), and send them via HTTP/WebSocket.
+- Add structured logging, basic metrics, and reconnection logic for resilient streaming.
+
+## Backend (FastAPI + PostgreSQL)
+- Create database schemas for cameras, zones, models, integrations, and plate events with migrations.
+- Implement ingestion endpoints for `PlateEvent` data, including validation and authentication.
+- Expose configuration APIs (cameras, zones, models, exporters) and `/healthz`.
+- Provide a WebSocket endpoint for live plate event streaming to the frontend.
+- Add background tasks for export/integration workflows (webhooks, REST, etc.).
+
+## Frontend (Next.js)
+- Build a live dashboard showing plate number, camera, timestamp, and confidence from the WebSocket feed.
+- Implement configuration pages for cameras, models, Hailo settings, and integrations.
+- Add forms/validation for managing exporters and other integration targets.
+- Include filtering, search, and pagination for historical plate events.
+
+## Deployment & DevEx
+- Provide Dockerfiles/docker-compose for edge and backend services; document hardware dependencies (Pi decoder, Hailo drivers/runtime).
+- Add CI checks (lint, type check, tests) and pre-commit hooks.
+- Write setup guides for development, staging, and production environments.
