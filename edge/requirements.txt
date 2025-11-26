@@ -1,3 +1,7 @@
 pyyaml
 requests
 websockets
+numpy
+opencv-python-headless
+onnxruntime
+pillow

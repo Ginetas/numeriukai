@@ -18,6 +18,10 @@ RETRY_QUEUE_PATH = Path(__file__).parent / "exporters" / "retry_queue.json"
 @dataclass
 class EdgeConfig:
     rtsp_url: str
+    camera_id: str | int = "camera-1"
+    target_fps: int | None = None
+    width: int | None = None
+    height: int | None = None
     detectors: Dict[str, Any] = field(default_factory=dict)
     ocr: Dict[str, Any] = field(default_factory=dict)
     exporters: Dict[str, Any] = field(default_factory=dict)

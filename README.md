@@ -3,7 +3,7 @@
 Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį orientuotu backend ir Next.js valdymo pultu.
 
 ## Architektūra
-- **Edge**: RTSP ingest stub, detektorius, centroid tracker, OCR ensemble, eksportuotojai (REST/WebSocket) su retry eile, TPMS klausytuvas.
+- **Edge**: RTSP ingest (GStreamer/OpenCV), YOLO ONNX detektorius, centroid tracker, LPRNet OCR, eksportuotojai (REST/WebSocket) su retry eile, TPMS klausytuvas.
 - **Backend**: FastAPI + SQLModel + Postgres, CRUD routeriai, event ingest/stream, Alembic migracijos.
 - **Frontend**: Next.js App Router + Zustand, valdymo pultas su backend health indikatoriumi.
 - **Deploy**: `docker-compose` su PostgreSQL, backend, frontend, edge.
@@ -31,7 +31,7 @@ Pilnas ANPR/ALPR monorepo, skirtas edge (Raspberry Pi) įrenginiui su į debesį
    ```
    - Backend pasiekiamas per `http://localhost:8000`.
    - Frontend pasiekiamas per `http://localhost:3000`.
-   - Edge konteineris kas ~10 s siunčia testinius įvykius į backend `/events/ingest`.
+   - Edge konteineris prijungia RTSP srautą, detekuoja numerius, atlieka OCR ir siunčia realius įvykius į backend `/events/ingest`.
 
 ### 📦 Instalacija
 
@@ -63,7 +63,9 @@ pytest
 - `/dashboard` puslapis tikrina backend `/healthz` ir rodo statusą UI kortelėje.
 
 ## Edge
-- `edge/pipeline.py` generuoja fake kadrus, pritaiko stub detekciją/OCR ir siunčia įvykius per eksporterius.
+- `edge/pipeline.py` jungiasi prie RTSP (`edge/ingest.py`), detekuoja numerius su YOLO ONNX (`edge/detector.py`), seka objektus (`edge/tracker.py`) ir atlieka LPRNet OCR (`edge/ocr/lprnet.py`).
+- `edge/event_builder.py` sukuria `PlateEvent` su JPEG kadru ir crop, eksportuojamus per REST/WebSocket.
+- Modelių svoriai automatiškai atsiunčiami jei jų nėra (`models/detector`, `models/ocr`).
 - `EdgeConfig` kraunamas iš YAML (`EDGE_CONFIG`) ir gali būti perrašomas `BACKEND_API_URL`.
 - Startas vykdomas per `python start.py` konteineryje.
 
@@ -72,9 +74,9 @@ pytest
 - Užtikrinkite GStreamer/OpenCV priklausomybes realiam ingestui ir akceleratorių tvarkykles (Coral/Hailo) detektoriui.
 
 ## Roadmap
-- [ ] Tikras GStreamer pipeline ir RTSP atkūrimas
-- [ ] Realaus detektoriaus integracija (YOLO/PP-YOLOE)
-- [ ] OCR modelių svorių krautuvai (CRNN, transformer)
+- [x] Tikras GStreamer pipeline ir RTSP atkūrimas
+- [x] Realaus detektoriaus integracija (YOLO ONNX)
+- [x] OCR modelių svorių krautuvai (LPRNet)
 - [ ] WebSocket eventų srautas ir atnaujinimai fronte
 - [ ] AuthN/AuthZ ir multi-tenant
 - [ ] Eksportavimo atsarginė eilė su persistentu

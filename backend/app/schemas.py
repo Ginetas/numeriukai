@@ -43,7 +43,14 @@ class ExporterCreate(BaseModel):
 
 
 class PlateEventIngest(BaseModel):
-    plate: str
+    plate_text: str
+    confidence: float
     camera_id: Optional[int]
+    zone_id: Optional[int] = None
     timestamp: Optional[datetime] = None
-    meta: Optional[dict] = None
+    direction: Optional[str] = None
+    frame_jpeg: Optional[str] = None
+    crop_jpeg: Optional[str] = None
+    bbox: Optional[list[float]] = None
+    track_id: Optional[int] = None
+    sensor_snapshot: Optional[dict] = None

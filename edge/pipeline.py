@@ -1,73 +1,75 @@
-"""Edge pipeline skeleton for ingesting RTSP streams and producing plate events."""
+"""Edge pipeline for real RTSP ingest, detection, tracking and OCR."""
 from __future__ import annotations
 
+import base64
 import logging
-import random
-import string
 import time
-from dataclasses import dataclass
 from typing import Iterator
 
+import numpy as np
+
+from detector import Detector, Detection
+from event_builder import EventBuilder, PlateEvent
+from ingest import RtspCameraIngest
+from ocr.lprnet import LPRNetOCR
 from settings import EdgeConfig, load_config
-from tracker import CentroidTracker
-from ocr.ensemble import OCREnsemble
+from tracker import CentroidTracker, Track
 from exporters.dispatcher import ExportDispatcher
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class Detection:
-    bbox: tuple[int, int, int, int]
-    score: float
-    label: str
-
-
-class RTSPIngest:
-    def __init__(self, rtsp_url: str) -> None:
-        self.rtsp_url = rtsp_url
-
-    def frames(self) -> Iterator[bytes]:
-        logger.info("Starting RTSP ingest for %s", self.rtsp_url)
-        while True:
-            yield b"fake-frame"
-            time.sleep(1)
-
-
-class Detector:
-    def __init__(self, config: dict) -> None:
-        self.config = config
-
-    def detect(self, frame: bytes) -> list[Detection]:
-        return [Detection(bbox=(0, 0, 100, 50), score=0.9, label="plate")]
-
-
 class EdgePipeline:
     def __init__(self, config: EdgeConfig) -> None:
         self.config = config
-        self.ingest = RTSPIngest(config.rtsp_url)
-        self.detector = Detector(config.detectors)
-        self.tracker = CentroidTracker(max_disappeared=5)
-        self.ocr = OCREnsemble(config.ocr)
+        self.ingest = RtspCameraIngest(config.rtsp_url, target_fps=config.target_fps, width=config.width, height=config.height)
+        detector_cfg = config.detectors or {}
+        self.detector = Detector(
+            weights_path=detector_cfg.get("weights", "models/detector/yolo_plate.onnx"),
+            conf=detector_cfg.get("confidence", 0.25),
+            iou=detector_cfg.get("iou", 0.45),
+        )
+        charset = config.ocr.get("charset", "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        ocr_weights = config.ocr.get("weights", "models/ocr/lprnet.onnx")
+        self.ocr = LPRNetOCR(weights_path=ocr_weights, charset=charset)
+        self.tracker = CentroidTracker(max_disappeared=10, max_distance=detector_cfg.get("max_distance", 80.0))
+        self.builder = EventBuilder(camera_id=config.camera_id)
         self.exporter = ExportDispatcher(config.exporters)
+        self.plate_min_conf = config.ocr.get("min_confidence", 0.4)
+        self.min_hits = config.ocr.get("min_hits", 2)
 
-    @staticmethod
-    def _fake_plate() -> str:
-        letters = ''.join(random.choices(string.ascii_uppercase, k=3))
-        digits = ''.join(random.choices(string.digits, k=3))
-        return f"{letters}{digits}"
+    def _prepare_event_payload(self, event: PlateEvent) -> dict:
+        payload = event.model_dump()
+        payload["frame_jpeg"] = base64.b64encode(event.frame_jpeg).decode("utf-8")
+        payload["crop_jpeg"] = base64.b64encode(event.crop_jpeg).decode("utf-8")
+        return payload
+
+    def _iter_frames(self) -> Iterator[np.ndarray]:
+        while True:
+            frame = self.ingest.read()
+            if frame is None:
+                continue
+            yield frame
 
     def run(self) -> None:
-        logger.info("Edge pipeline starting")
-        for frame in self.ingest.frames():
+        logger.info("Edge pipeline starting for camera %s", self.config.camera_id)
+        for frame in self._iter_frames():
+            start = time.time()
             detections = self.detector.detect(frame)
-            tracked = self.tracker.update(detections)
-            for track in tracked:
-                plate_text = self.ocr.recognize(frame, track) or self._fake_plate()
-                event = self.ocr.build_event(track, plate_text)
-                logger.info("Generated event %s", event)
-                self.exporter.dispatch(event)
-            time.sleep(10)
+            plates = [det for det in detections if det.cls == "plate"]
+            tracks = self.tracker.update(plates)
+            for track, det in zip(tracks, plates):
+                if track.hits < self.min_hits:
+                    continue
+                crop = frame[int(det.bbox[1]) : int(det.bbox[3]), int(det.bbox[0]) : int(det.bbox[2])]
+                ocr_result = self.ocr.infer(crop)
+                if not ocr_result or ocr_result.confidence < self.plate_min_conf:
+                    continue
+                event = self.builder.build(frame, track, det, ocr_result)
+                payload = self._prepare_event_payload(event)
+                logger.info("Dispatching plate %s (conf %.2f)", ocr_result.text, ocr_result.confidence)
+                self.exporter.dispatch(payload)
+            logger.debug("Frame processed in %.3fs", time.time() - start)
 
 
 def main() -> None:
