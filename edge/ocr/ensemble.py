@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Dict, List
 
 from pipeline import Detection
@@ -54,9 +55,10 @@ class OCREnsemble:
 
     def build_event(self, track, plate_text: str) -> dict:
         return {
-            "plate": plate_text,
+            "plate_text": plate_text,
             "camera_id": 1,
-            "meta": {
+            "timestamp": datetime.utcnow().isoformat(),
+            "raw_payload": {
                 "track_id": track.track_id,
                 "bbox": track.detection.bbox,
             },
