@@ -72,9 +72,4 @@ pytest
 - Užtikrinkite GStreamer/OpenCV priklausomybes realiam ingestui ir akceleratorių tvarkykles (Coral/Hailo) detektoriui.
 
 ## Roadmap
-- [ ] Tikras GStreamer pipeline ir RTSP atkūrimas
-- [ ] Realaus detektoriaus integracija (YOLO/PP-YOLOE)
-- [ ] OCR modelių svorių krautuvai (CRNN, transformer)
-- [ ] WebSocket eventų srautas ir atnaujinimai fronte
-- [ ] AuthN/AuthZ ir multi-tenant
-- [ ] Eksportavimo atsarginė eilė su persistentu
+Suvienodintas TODO ir roadmap sąrašas perkeltas į [docs/TODO.md](docs/TODO.md), kad būtų aišku, kokius darbus atlikti per visą stacką.
