@@ -26,8 +26,16 @@ Vienas suvienodintas TODO ir roadmap dokumentas, skirtas aiškiai matyti pagrind
 ## Frontend (Next.js)
 - [ ] Gyvas dashboard su numeriu, kamera, timestamp ir confidence iš WebSocket srauto.
 - [ ] Konfigūracijos puslapiai kameroms, modeliams, Hailo nustatymams ir integracijoms.
-- [ ] Formos/validacija eksporteriams ir kitiems integracijos taškams valdyti.
-- [ ] Filtravimas, paieška ir puslapiavimas istoriniams `PlateEvent` įrašams.
+
+### Frontend roadmap (prioritetai)
+1. **Real-time streaming UX**: pagerinti WebSocket srautą (loading/rekonekcija, playback greitis, atgalinė peržiūra) ir vizualiai išskirti aukšto/žemo confidence įvykius.
+2. **Išplėstinis filtravimas ir puslapiavimas**: server-side paieška, data range filtrai, kamera/zona/modelis filtrai ir numatytas rūšiavimas pagal laiką/svorį.
+3. **Formų validacijos šablonai**: pakartotinai naudojami hookai/schema kameroms, zonom, modeliams ir exporter konfigūracijoms; inline klaidos, numatytos reikšmės ir „save as draft“.
+4. **Klaidų ir reporting strategija**: globalus „toast“/banneris API klaidoms, form error rail, ir žurnalų/pastabų siuntimas į backendą (feedback modalas).
+5. **Prieinamumo (a11y) sąrašas**: focus state, keyboard navigation, ARIA labeliai, spalvų kontrasto patikra ir „skip to content“ nuoroda.
+6. **Dizaino sistemos konsolidacija**: centralizuoti UI primitives (buttons, inputs, kortelės), paletė ir tipografija; dokumentuoti komponentų naudojimą.
+7. **Testavimas**: vienetų testai komponentams (hooks/store) ir Playwright srautai (auth, dashboard, konfigūracija, filtrai).
+8. **Deploy konfigai**: atskiri Next.js build profiliai (dev/staging/prod), aplinkos kintamųjų matrica ir observability (Sentry/otel) jungtys.
 
 ## Deployment & DevEx
 - [ ] Dockerfile ir docker-compose edge bei backend servisams; dokumentuoti HW priklausomybes (Pi decoder, Hailo driveriai/runtime).

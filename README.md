@@ -72,4 +72,4 @@ pytest
 - Užtikrinkite GStreamer/OpenCV priklausomybes realiam ingestui ir akceleratorių tvarkykles (Coral/Hailo) detektoriui.
 
 ## Roadmap
-Suvienodintas TODO ir roadmap sąrašas perkeltas į [docs/TODO.md](docs/TODO.md), kad būtų aišku, kokius darbus atlikti per visą stacką.
+Suvienodintas TODO ir roadmap sąrašas perkeltas į [docs/TODO.md](docs/TODO.md), kad būtų aišku, kokius darbus atlikti per visą stacką. Frontendo prioritetai detalizuoti skiltyje ["Frontend roadmap (prioritetai)"](docs/TODO.md#frontend-roadmap-prioritetai).
